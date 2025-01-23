@@ -5,7 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "einops>=0.8.0",
+    "langchain-community>=0.3.15",
+    "langchain-huggingface>=0.1.2",
+    "langchain-unstructured>=0.1.6",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "setuptools>=75.8.0",
     "streamlit>=1.41.1",
     "torch>=2.5.1",
     "transformers>=4.48.0",
+    "unstructured>=0.14.8",
+    "xlrd>=2.0.1",
 ]
