@@ -53,4 +53,4 @@ class InferenceProcessor:
                 "context": docs_content,
             }
         )
-        return self.chat(prompted_message)
+        return self._chat(prompted_message.to_string())
