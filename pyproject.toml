@@ -18,3 +18,8 @@ dependencies = [
     "unstructured>=0.14.8",
     "xlrd>=2.0.1",
 ]
+
+[dependency-groups]
+gpu = [
+    "flash-attn>=2.7.4.post1",
+]
