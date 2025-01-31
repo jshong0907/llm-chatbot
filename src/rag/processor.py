@@ -11,7 +11,7 @@ class RagProcessor:
     EMBEDDING_MODEL_NAME = "jinaai/jina-embeddings-v3"
     CHUNK_SIZE = 100
     CHUNK_OVERLAP = 20
-    DATASET_DIR = "datasets"
+    DATASET_DIR = "/datasets"
 
     def __init__(self):
         self._install_nltk_dependencies()
