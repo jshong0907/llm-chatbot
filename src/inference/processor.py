@@ -2,8 +2,8 @@ from typing import Optional
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-from src.inference.prompts import custom_rag_prompt
-from src.rag.processor import RagProcessor
+from inference.prompts import custom_rag_prompt
+from rag.processor import RagProcessor
 
 
 class InferenceProcessor:
@@ -32,11 +32,16 @@ class InferenceProcessor:
         }
 
     def chat(self, message: str) -> str:
+        if self.rag_processor is not None:
+            return self._chat_with_rag(message)
+        return self._chat(message)
+
+    def _chat(self, message: str) -> str:
         tokenized_input = self.tokenizer.encode(message, return_tensors="pt").to(self.model.device)
         output = self.model.generate(tokenized_input, **self._generation_args)[0]
         return self.tokenizer.decode(output, skip_special_tokens=True)
 
-    def chat_with_rag(self, message: str) -> str:
+    def _chat_with_rag(self, message: str) -> str:
         if self.rag_processor is None:
             raise NotImplementedError
 

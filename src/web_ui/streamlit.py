@@ -1,6 +1,6 @@
 import streamlit as st
 
-from src.inference.processor import InferenceProcessor
+from inference.processor import InferenceProcessor
 
 
 class StreamlitInterface:
@@ -12,7 +12,7 @@ class StreamlitInterface:
         user_input = st.text_input("Type your message here and press enter", key="input")
 
         if user_input:
-            response = self.inference_processor.chat_with_rag(user_input)
+            response = self.inference_processor.chat(user_input)
 
             col1, col2 = st.columns([1, 4])  # Adjust the ratio as needed
             with col1:

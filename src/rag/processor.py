@@ -16,8 +16,13 @@ class RagProcessor:
     def __init__(self):
         self._install_nltk_dependencies()
         self.embeddings = HuggingFaceEmbeddings(model_name=self.EMBEDDING_MODEL_NAME, model_kwargs={"trust_remote_code": True})
-
-        self.vector_store.add_documents(self.docs)
+        self.vector_store = InMemoryVectorStore(self.embeddings)
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.CHUNK_SIZE,  # chunk size (characters)
+            chunk_overlap=self.CHUNK_OVERLAP,  # chunk overlap (characters)
+            add_start_index=True,  # track index in original document
+        )
+        self._add_documents()
         self.retriever: VectorStoreRetriever = self.vector_store.as_retriever()
 
     def _install_nltk_dependencies(self, quiet=True):
@@ -34,15 +39,11 @@ class RagProcessor:
                 self._add_file_to_documents(file_path)
 
     def _add_file_to_documents(self, file):
-        self.loader = UnstructuredExcelLoader(file)
-        self._docs = self.loader.load()
-        self.vector_store = InMemoryVectorStore(self.embeddings)
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.CHUNK_SIZE,  # chunk size (characters)
-            chunk_overlap=self.CHUNK_OVERLAP,  # chunk overlap (characters)
-            add_start_index=True,  # track index in original document
-        )
-        self.docs = self.text_splitter.split_documents(self._docs)
+        loader = UnstructuredExcelLoader(file)
+        _docs = loader.load()
+
+        docs = self.text_splitter.split_documents(_docs)
+        self.vector_store.add_documents(docs)
 
     def process(self, keyword: str) -> list[Document]:
         return self.retriever.invoke(keyword)

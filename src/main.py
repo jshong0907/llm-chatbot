@@ -1,6 +1,6 @@
-from src.inference.processor import InferenceProcessor
-from src.rag.processor import RagProcessor
-from src.web_ui.streamlit import StreamlitInterface
+from inference.processor import InferenceProcessor
+from rag.processor import RagProcessor
+from web_ui.streamlit import StreamlitInterface
 
 
 if __name__ == "__main__":
