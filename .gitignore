@@ -11,4 +11,4 @@ wheels/
 .env
 
 .idea/
-dataset/
+datasets/*
