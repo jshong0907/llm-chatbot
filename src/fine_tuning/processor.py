@@ -1,14 +1,16 @@
 import torch
 from datasets import load_dataset
+from datasets.formatting.formatting import LazyRow
 from peft import LoraConfig
 from transformers import TrainingArguments, AutoModelForCausalLM, AutoTokenizer
-from trl import SFTTrainer
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 
 class FineTuningProcessor:
     MODEL_NAME = "microsoft/Phi-3.5-mini-instruct"
     DATASET_NAME = "BCCard/BCCard-Finance-Kor-QnA"
     OUTPUT_DIR = "/checkpoints"
+    TRAIN_EPOCH = 1
 
     def __init__(self):
         self.model = AutoModelForCausalLM.from_pretrained(self.MODEL_NAME, **self.model_config)
@@ -28,16 +30,14 @@ class FineTuningProcessor:
             num_proc=10,
             remove_columns=column_names,
         )
+        collator = DataCollatorForCompletionOnlyLM("<|assistant|>", tokenizer=self.tokenizer)
         self.trainer = SFTTrainer(
             model=self.model,
             args=self.training_config,
             peft_config=self.peft_config,
             train_dataset=self.processed_train_dataset,
             eval_dataset=self.processed_test_dataset,
-            max_seq_length=2048,
-            dataset_text_field="text",
-            tokenizer=self.tokenizer,
-            packing=True
+            data_collator=collator,
         )
 
     def train(self):
@@ -60,32 +60,6 @@ class FineTuningProcessor:
         self.trainer.save_metrics(self.trainer, "eval", metrics)
 
     @property
-    def _training_config(self):
-        return {
-            "bf16": True,
-            "do_eval": False,
-            "learning_rate": 5.0e-06,
-            "log_level": "info",
-            "logging_steps": 20,
-            "logging_strategy": "steps",
-            "lr_scheduler_type": "cosine",
-            "num_train_epochs": 1,
-            "max_steps": -1,
-            "output_dir": self.OUTPUT_DIR,
-            "overwrite_output_dir": True,
-            "per_device_eval_batch_size": 4,
-            "per_device_train_batch_size": 4,
-            "remove_unused_columns": True,
-            "save_steps": 100,
-            "save_total_limit": 1,
-            "seed": 0,
-            "gradient_checkpointing": True,
-            "gradient_checkpointing_kwargs":{"use_reentrant": False},
-            "gradient_accumulation_steps": 1,
-            "warmup_ratio": 0.2,
-        }
-
-    @property
     def _peft_config(self):
         return {
             "r": 16,
@@ -99,7 +73,28 @@ class FineTuningProcessor:
 
     @property
     def training_config(self):
-        return TrainingArguments(**self._training_config)
+        return SFTConfig(
+            bf16=True,
+            do_eval=False,
+            learning_rate=5.0e-06,
+            log_level="info",
+            logging_strategy="steps",
+            lr_scheduler_type="cosine",
+            num_train_epochs=self.TRAIN_EPOCH,
+            output_dir=self.OUTPUT_DIR,
+            overwrite_output_dir=True,
+            per_device_train_batch_size=4,
+            per_device_eval_batch_size=4,
+            remove_unused_columns=True,
+            save_steps=100,
+            save_total_limit=1,
+            seed=0,
+            gradient_checkpointing=True,
+            gradient_checkpointing_kwargs={"use_reentrant": False},
+            gradient_accumulation_steps=1,
+            warmup_ratio=0.2,
+            max_seq_length=2048,
+        )
 
     @property
     def peft_config(self):
@@ -124,11 +119,14 @@ class FineTuningProcessor:
         return tokenizer
 
     @staticmethod
-    def apply_chat_template(data, tokenizer):
-        data["text"] = data.map(lambda x: {
-            'data': tokenizer.apply_chat_template(
-                [{"role": "system", "content": x['instruction']}, {"role": "assistant", "content": x['output']}],
-                add_generation_prompt=False, tokenize=False, return_tensors="pt"
-            )
-        }).map(lambda x: tokenizer(x["data"]), batched=True)
+    def apply_chat_template(data: LazyRow, tokenizer):
+        messages = [
+            {"role": "system", "content": data['instruction']},
+            {"role": "assistant", "content": data['output']}
+        ]
+
+        data["text"] = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=False
+        )
+
         return data
