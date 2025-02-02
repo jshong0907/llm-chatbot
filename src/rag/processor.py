@@ -23,7 +23,7 @@ class RagProcessor:
             add_start_index=True,  # track index in original document
         )
         self._add_documents()
-        self.retriever: VectorStoreRetriever = self.vector_store.as_retriever()
+        self.retriever: VectorStoreRetriever = self.vector_store.as_retriever(search_kwargs={"k": 20})
 
     def _install_nltk_dependencies(self, quiet=True):
         import nltk

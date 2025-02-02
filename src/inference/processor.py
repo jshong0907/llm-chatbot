@@ -1,16 +1,16 @@
 from typing import Optional
 
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from inference.prompts import custom_rag_prompt
 from rag.processor import RagProcessor
 
 
 class InferenceProcessor:
-    MODEL_NAME = "microsoft/Phi-3.5-mini-instruct"
-    MAX_TOKEN = 500
-    TEMPERATURE = 0.0  # Less Temperature, More creative answer
-    DO_SAMPLE = False
+    MODEL_NAME = "Bllossom/llama-3.2-Korean-Bllossom-3B"
+    MAX_TOKEN = 200
+    TEMPERATURE = 0.1
+    DO_SAMPLE = True
 
     def __init__(self, rag_processor: Optional[RagProcessor] = None):
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -26,8 +26,6 @@ class InferenceProcessor:
     def _generation_args(self) -> dict:
         return {
             "max_new_tokens": self.MAX_TOKEN,
-            "max_length": self.MAX_TOKEN,
-            "temperature": self.TEMPERATURE,
             "do_sample": self.DO_SAMPLE,
         }
 

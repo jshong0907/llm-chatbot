@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [project.scripts]
-chat-ui = "streamlit run main.py --server.port 8000"
+chat-ui = "streamlit run src/main.py --server.port 8000"
 
 [dependency-groups]
 gpu = [
