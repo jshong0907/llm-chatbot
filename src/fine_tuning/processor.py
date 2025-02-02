@@ -48,16 +48,16 @@ class FineTuningProcessor:
     def _train(self):
         train_result = self.trainer.train()
         metrics = train_result.metrics
-        self.trainer.log_metrics(self.trainer, "train", metrics)
-        self.trainer.save_metrics(self.trainer, "train", metrics)
-        self.trainer.save_state(self.trainer)
+        self.trainer.log_metrics("train", metrics)
+        self.trainer.save_metrics("train", metrics)
+        self.trainer.save_state()
 
     def _evaluate(self):
         self.tokenizer.padding_side = 'left'
         metrics = self.trainer.evaluate()
         metrics["eval_samples"] = len(self.processed_test_dataset)
-        self.trainer.log_metrics(self.trainer, "eval", metrics)
-        self.trainer.save_metrics(self.trainer, "eval", metrics)
+        self.trainer.log_metrics("eval", metrics)
+        self.trainer.save_metrics("eval", metrics)
 
     @property
     def _peft_config(self):
