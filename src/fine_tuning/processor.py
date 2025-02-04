@@ -7,7 +7,7 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 
 class FineTuningProcessor:
-    MODEL_NAME = "microsoft/Phi-3.5-mini-instruct"
+    MODEL_NAME = "Bllossom/llama-3.2-Korean-Bllossom-3B"
     DATASET_NAME = "BCCard/BCCard-Finance-Kor-QnA"
     OUTPUT_DIR = "/checkpoints"
     TRAIN_EPOCH = 1
